@@ -5,17 +5,17 @@ from classes.setup import Setup
 
 HOME_DIR = path.expanduser('~')
 SETUP_DIR = HOME_DIR + '\Documents\Assetto Corsa Competizione\Setups\\'
-VEHICLE_LIST = listdir(SETUP_DIR)
+VEHICLE_DIRECTORIES = listdir(SETUP_DIR)
+vehicle_list = {}
 
 
 
-def return_car(name: str, cars: dict) -> Car:
-    for car in cars: 
+def return_car(name: str) -> Car:
+    for car in vehicle_list: 
         if car == name:
-            return cars[car]
+            return vehicle_list[car]
 
     return None
-
 
 def return_setup(car: Car, track: str, name: str) -> Setup:
     for setup in car.setups[track]:
@@ -24,62 +24,60 @@ def return_setup(car: Car, track: str, name: str) -> Setup:
 
     return None
 
-def main():
-    
-    cars = {}
-    for name in VEHICLE_LIST:
-        car = Car(name)
-        cars[car.name] = car
-
+def prompt_car() -> Car:
     question_car = {
             'type': 'list',
             'name': 'car',
             'message': 'Select a car',
-            'choices': list(cars.keys())
+            'choices': list(vehicle_list.keys())
         }
-    
 
     answer_car = prompt(question_car)
-    selected_car = return_car(answer_car['car'], cars)
+    return return_car(answer_car['car'])
 
+def prompt_track(car: Car) -> str:
     question_track =  {
         'type': 'list',
         'name': 'track',
         'message': 'Select a track',
-        'choices': selected_car.tracks
+        'choices': car.tracks
     }
     
     answer_track = prompt(question_track)
-    selected_track = answer_track['track']
+    return answer_track['track']
 
-    question_setup_1 = {
+
+def prompt_setup(car: Car, track: str) -> Setup:
+    question_setup = {
         'type': 'list',
-        'name': 'setup_1',
-        'message': 'Select the first setup',
-        'choices': selected_car.setups[selected_track]
+        'name': 'setup',
+        'message': 'Select a setup',
+        'choices': car.setups[track]
     }
     
-    answer_setup_1 = prompt(question_setup_1)
-    selected_setup_1 = return_setup(
-        selected_car,
-        selected_track,
-        answer_setup_1['setup_1']
+    answer_setup = prompt(question_setup)
+    return return_setup(
+        car,
+        track,
+        answer_setup['setup']
     )
 
-    question_setup_2 = {
-        'type': 'list',
-        'name': 'setup_2',
-        'message': 'Select the first setup',
-        'choices': selected_car.setups[selected_track]
-    }
-    
-    answer_setup_2 = prompt(question_setup_2)
-    selected_setup_2 = return_setup(
-            selected_car,
-            selected_track,
-            answer_setup_2['setup_2']
-        )
 
+def main():
+    global vehicle_list
+
+    for name in VEHICLE_DIRECTORIES:
+        car = Car(name)
+        vehicle_list[car.name] = car
+
+    
+    selected_car = prompt_car()
+
+    selected_track = prompt_track(selected_car)
+
+    selected_setup_1 = prompt_setup(selected_car, selected_track)
+    
+    selected_setup_2 = prompt_setup(selected_car, selected_track)
     
     comparison = selected_setup_1.compare(selected_setup_2)
 
