@@ -47,12 +47,21 @@ def prompt_track(car: Car) -> str:
     return answer_track['track']
 
 
-def prompt_setup(car: Car, track: str) -> Setup:
+def prompt_setup(car: Car, track: str, omit: Setup = None) -> Setup:
+
+    display_setups = []
+    if omit:
+        for setup in car.setups[track]:
+            if setup != omit.file_name:
+                display_setups.append(setup)
+    else:
+        display_setups = car.setups[track]
+
     question_setup = {
         'type': 'list',
         'name': 'setup',
         'message': 'Select a setup',
-        'choices': car.setups[track]
+        'choices': display_setups
     }
     
     answer_setup = prompt(question_setup)
@@ -77,7 +86,7 @@ def main():
 
     selected_setup_1 = prompt_setup(selected_car, selected_track)
     
-    selected_setup_2 = prompt_setup(selected_car, selected_track)
+    selected_setup_2 = prompt_setup(selected_car, selected_track, selected_setup_1)
     
     comparison = selected_setup_1.compare(selected_setup_2)
 
