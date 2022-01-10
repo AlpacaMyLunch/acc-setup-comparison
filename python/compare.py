@@ -1,3 +1,4 @@
+import json
 from PyInquirer import prompt
 from os import path, listdir
 from classes.car import Car
@@ -89,7 +90,12 @@ def main():
     
     comparison = selected_setup_1.compare(selected_setup_2)
 
-    print(comparison)
+    print(
+        json.dumps(
+            comparison,
+            indent=4
+        )
+    )
 
 
     
