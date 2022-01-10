@@ -79,7 +79,6 @@ def main():
         car = Car(name)
         vehicle_list[car.name] = car
 
-    
     selected_car = prompt_car()
 
     selected_track = prompt_track(selected_car)

@@ -28,6 +28,17 @@ class Car:
                 self.setups[track][file_name] = setup
 
 
+        # Make sure we don't list a track that has zero setups 
+        temp_track_list = []
+        for track in self.tracks:
+            if self.setups[track] != {}:
+                temp_track_list.append(track)
+                self.setups[track].pop(track, None)
+
+        self.tracks = temp_track_list
+
+
+
 
     def gather_track_list(self) -> list:
         return listdir(self.directory)
