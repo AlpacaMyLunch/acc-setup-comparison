@@ -9,7 +9,7 @@ class Setup:
     attributes: dict
 
     def __init__(self, file_path: str):
-
+        
         self.file_path = file_path
         self.file_name = path.basename(file_path)
 
@@ -66,8 +66,6 @@ class Setup:
                 # ignore the list index, return the parent
                 if item.isnumeric() == False:
                     setup_items.append(item)
-                else:
-                    print(item, '\t', difference)
 
 
 

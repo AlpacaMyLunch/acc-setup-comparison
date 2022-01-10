@@ -8,19 +8,23 @@ class Car:
     directory: str 
     name: str
     setups: dict
+    tracks: list
 
     def __init__(self, compressed_name: str):
 
-        self.directory = SETUP_DIR + compressed_name + '/'
+        self.directory = SETUP_DIR + compressed_name + '\\'
         self.name = compressed_name.replace('_', ' ')
 
 
+        # Load the tracks
+        self.tracks = self.gather_track_list()
+
         # Load the setup files
         self.setups = {}
-        for track in self.gather_track_list():
+        for track in self.tracks:
             self.setups[track] = {}
             for file_name in self.gather_setups(track):
-                setup = Setup(self.directory + '/' + file_name)
+                setup = Setup('{}{}\{}'.format(self.directory, track, file_name))
                 self.setups[track][file_name] = setup
 
 
