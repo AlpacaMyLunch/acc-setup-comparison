@@ -62,7 +62,7 @@ class Setup:
                 # My RegEx is lacking.  Need to remove the single quote
                 item = item.replace("'", "")
 
-                # also is the last item is numeric that means it is an index to a list.
+                # also if the last item is numeric that means it is an index to a list.
                 # ignore the list index, return the parent
                 if item.isnumeric() == False:
                     setup_items.append(item)
