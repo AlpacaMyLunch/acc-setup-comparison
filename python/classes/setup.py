@@ -93,7 +93,13 @@ class Setup:
                 if 'toeOutLinear' in output['basicSetup']['alignment']:
                     for file_name in output['basicSetup']['alignment']['toeOutLinear']:
                         output['basicSetup']['alignment']['toeOutLinear'][file_name] = parse_tire_values(output['basicSetup']['alignment']['toeOutLinear'][file_name])
-                        
+
+
+        if 'advancedSetup' in output:
+            if 'aeroBalance' in output['advancedSetup']:
+                if 'rodLength' in output['advancedSetup']['aeroBalance']:
+                    for file_name in output['advancedSetup']['aeroBalance']['rodLength']:
+                        output['advancedSetup']['aeroBalance']['rodLength'][file_name] = parse_tire_values(output['advancedSetup']['aeroBalance']['rodLength'][file_name])
         return output
 
 
