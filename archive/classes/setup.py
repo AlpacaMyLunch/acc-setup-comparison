@@ -68,7 +68,7 @@ class Setup:
                     setup_items.append(item)
 
 
-
+            print(difference)
             nested_set(
                 output, 
                 setup_items, 
@@ -137,6 +137,7 @@ def nested_get(data, keys):
     if last_key.isnumeric():
         keys = keys[:-1]
 
+    print(keys)
     for key in keys:
         data = data[key]
     return data
