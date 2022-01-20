@@ -78,7 +78,40 @@ class Setup:
                 }
             ) 
 
+
+        # Parse some of the output
+        if 'basicSetup' in output:
+            if 'tyres' in output['basicSetup']:
+                if 'tyrePressure' in output['basicSetup']['tyres']:
+                    for file_name in output['basicSetup']['tyres']['tyrePressure']:
+                        output['basicSetup']['tyres']['tyrePressure'][file_name] = parse_tire_values(output['basicSetup']['tyres']['tyrePressure'][file_name])
+
+            if 'alignment' in output['basicSetup']:
+                if 'staticCamber' in output['basicSetup']['alignment']:
+                    for file_name in output['basicSetup']['alignment']['staticCamber']:
+                        output['basicSetup']['alignment']['staticCamber'][file_name] = parse_tire_values(output['basicSetup']['alignment']['staticCamber'][file_name])
+                if 'toeOutLinear' in output['basicSetup']['alignment']:
+                    for file_name in output['basicSetup']['alignment']['toeOutLinear']:
+                        output['basicSetup']['alignment']['toeOutLinear'][file_name] = parse_tire_values(output['basicSetup']['alignment']['toeOutLinear'][file_name])
+                        
         return output
+
+
+def parse_tire_values(tires: list) -> dict:
+    """
+    Take the array of tire values and return a more descriptive dict
+    Use for tire pressure, camber, toe, caster...
+    """
+
+    # Need to verify which index goes to which tire.
+    # this is a guess
+    return {
+        'front_left': tires[0],
+        'front_right': tires[1],
+        'rear_right': tires[2],
+        'rear_left': tires[3]
+    }
+
 
 def json_from_file(file_name):
     with open(file_name) as json_file:
