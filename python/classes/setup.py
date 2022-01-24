@@ -1,8 +1,8 @@
 import json, re
 from os import path
-from attr import attributes
-from deepdiff import DeepDiff
 
+
+CORNER_NAMES = ['front_left', 'front_right', 'rear_left', 'rear_right']
 
 class Setup:
     file_path: str
@@ -18,10 +18,6 @@ class Setup:
         self.attributes = {}
         self.load_data(file_path)
         self.attributes['temperatures'] = self.parse_title()
-
-        print()
-        print(self.attributes['carName'], self.file_name)
-
 
         self.convert_values()
 
@@ -158,7 +154,7 @@ def tire_pressure_conversion(raw: int) -> float:
     )
 
 
-def toe_conversion(raw: dict, car_name: str) -> float:
+def toe_conversion(raw: dict, car_name: str) -> dict:
     
     if car_name == 'mclaren_720s_gt3':
 
@@ -176,25 +172,145 @@ def toe_conversion(raw: dict, car_name: str) -> float:
         
     else:
 
-        for corner in ['front_left', 'front_right', 'rear_left', 'rear_right']:
+        for corner in CORNER_NAMES:
             raw[corner] = 0.01 * raw[corner] - 0.4
 
 
 
 
-    for corner in ['front_left', 'front_right', 'rear_left', 'rear_right']:
+    for corner in CORNER_NAMES:
         raw[corner] = round(raw[corner], 2)
 
     return raw
     
 
-def caster_conversion(raw: int) -> float:
-    # raw 23 = display 13.8
-    # raw 3 = display 11.2
-    # raw 46 = display 12.3
+def caster_conversion(raw: dict, car_name: str) -> dict:
+    
+    if car_name in ['ferrari_488_gt3', 'ferrari_488_gt3_evo']:
+        for corner in CORNER_NAMES:
+            raw[corner] = (0.159 * raw[corner]) + 5
+    
+    elif car_name in ['audi_r8_lms', 'audi_r8_lms_evo']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 8.8 + raw[corner] * (8 / 34)
 
+    elif car_name in ['lamborghini_huracan_gt3', 'lamborghini_huracan_gt3_evo']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 6.2 + raw[corner] * (8.8 / 34)
 
-    pass
+    elif car_name == 'mclaren_650s_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 5.3 + (.24 * raw[corner])
+
+    elif car_name == 'nissan_gt_r_gt3_2018':
+        for corner in CORNER_NAMES:
+            raw[corner] = 12.5 + (.18 * raw[corner])
+
+    elif car_name == 'bmw_m6_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 6.7 + raw[corner] * (8.3 / 40)
+
+    elif car_name in ['bentley_continental_gt3_2018', 'bentley_continental_gt3_2016']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 8.3 + raw[corner] * (7.2 / 30)
+
+    elif car_name in ['porsche_991ii_gt3_cup', 'porsche_991_gt3_r']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 7.3 + (.1 * raw[corner])
+
+    elif car_name == 'nissan_gt_r_gt3_2017':
+        for corner in CORNER_NAMES:
+            raw[corner] = 6 + raw[corner] * (11.3 / 60)
+
+    elif car_name == 'amr_v12_vantage_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 8.3 + (.22 * raw[corner])
+
+    elif car_name == 'lamborghini_gallardo_rex':
+        for corner in CORNER_NAMES:
+            raw[corner] = 4.9 + raw[corner] * (7.1 / 34)
+
+    elif car_name == 'jaguar_g3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 4 + (.1825 * raw[corner])
+
+    elif car_name == 'lexus_rc_f_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 7.9 + (.19 * raw[corner])
+
+    elif car_name in ['honda_nsx_gt3', 'honda_nsx_gt3_evo']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 8.8 + (raw[corner] * (6.4 / 34))
+
+    elif car_name == 'lamborghini_huracan_st':
+        for corner in CORNER_NAMES:
+            raw[corner] = 6.2 + raw[corner] * (8.8 / 34)
+
+    elif car_name in ['mercedes_amg_gt3', 'mercedes_amg_gt3_evo']:
+        for corner in CORNER_NAMES:
+            raw[corner] = 6 + raw[corner] * (8.1 / 44)
+
+    elif car_name == 'amr_v8_vantage_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 10.7 + raw[corner] * (5.4 / 30)
+
+    elif car_name == 'mclaren_720s_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 5.3 + raw[corner] * (2.7 / 11)
+
+    elif car_name == 'porsche_991ii_gt3_r':
+        for corner in CORNER_NAMES:
+            raw[corner] = 4.4 + .2 * raw[corner]
+
+    elif car_name == 'bmw_m4_gt3':
+        for corner in CORNER_NAMES:
+            raw[corner] = 6.1 + .195 * raw[corner]
+
+    elif car_name == 'alpine_a110_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 7.3 + raw[corner] * (6.4 / 34)
+
+    elif car_name == 'amr_v8_vantage_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] =  10.7 + raw[corner] * (5.4 / 30)
+
+    elif car_name == 'audi_r8_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 6.6 + raw[corner] * (6.7 / 34)
+
+    elif car_name == 'bmw_m4_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 8.4 # ???????????????????
+
+    elif car_name == 'chevrolet_camaro_gt4r':
+        for corner in CORNER_NAMES:
+            raw[corner] = 7.1 # ????????????????????
+
+    elif car_name == 'ginetta_g55_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 3.7 + .2625 * raw[corner]
+
+    elif car_name == 'ktm_xbow_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 1.7 + .1925 * raw[corner]
+
+    elif car_name == 'maserati_mc_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 3.4 + raw[corner] * (2.2 / 10)
+
+    elif car_name == 'mclaren_570s_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 5.3 + raw[corner] * (4.9 / 20)
+
+    elif car_name == 'mercedes_amg_gt4':
+        for corner in CORNER_NAMES:
+            raw[corner] = 9.2 + .18 * raw[corner]
+
+    elif car_name == 'porsche_718_cayman_gt4_mr':
+        for corner in CORNER_NAMES:
+            raw[corner] = 7.3 + raw[corner] * (2.9 / 28)
+
+    return raw
 
 
 def json_from_file(file_name):
