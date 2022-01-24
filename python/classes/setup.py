@@ -315,6 +315,47 @@ def caster_conversion(raw: dict, car_name: str) -> dict:
     return raw
 
 
+def brake_bias_conversion(raw: int, car_name: str) -> float:
+
+    if car_name in ['ferrari_488_gt3', 'mclaren_650s_gt3', 'mclaren_720s_gt3', 'ferrari_488_gt3_evo', 'chevrolet_camaro_gt4r']:
+        return 47 + .2 * raw
+
+    if car_name in ['audi_r8_gt4', 'mercedes_amg_gt3_evo', 'honda_nsx_gt3_evo', 'audi_r8_lms_evo', 'lamborghini_huracan_gt3_evo', 'mercedes_amg_gt3', 'audi_r8_lms', 'lamborghini_huracan_gt3', 'lamborghini_gallardo_rex', 'lexus_rc_f_gt3', 'honda_nsx_gt3', 'lamborghini_huracan_st']:
+        return 50 + .2 * raw
+
+    if car_name in ['nissan_gt_r_gt3_2017', 'nissan_gt_r_gt3_2018', 'bmw_m6_gt3']:
+        return 47.5 + .3 * raw
+
+    if car_name in ['amr_v8_vantage_gt3', 'bentley_continental_gt3_2016', 'bentley_continental_gt3_2018', 'amr_v12_vantage_gt3', 'jaguar_g3']:
+        return 57 + .2 * raw
+    
+    if car_name in ['porsche_991ii_gt3_cup', 'bmw_m4_gt4', 'maserati_mc_gt4']:
+        return 49 + .2 * raw
+
+    if car_name in ['porsche_991_gt3_r', 'porsche_991ii_gt3_r']:
+        return 43 + .2 * raw
+
+    if car_name == 'bmw_m4_gt3':
+        return 48.5 + .3 * raw
+    
+    if car_name in ['alpine_a110_gt4', 'amr_v8_vantage_gt4', 'porsche_718_cayman_gt4_mr']:
+        return 45 + .2 * raw
+
+    if car_name in ['ginetta_g55_gt4']:
+        return 46 + .2 * raw
+
+    if car_name in ['ktm_xbow_gt4']:
+        return 44 + .2 * raw
+
+    if car_name == 'mclaren_570s_gt4':
+        return 60 + .2 * raw
+
+    if car_name == 'mercedes_amg_gt4':
+        return 51 + .2 * raw
+
+    
+    
+
 def json_from_file(file_name):
     with open(file_name) as json_file:
         json_data = json.load(json_file)
