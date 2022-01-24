@@ -115,6 +115,8 @@ class Setup:
     def convert_values(self):
         """
         convert the raw setup values to more readable values
+
+        Math copied from this tool: https://simsource.azurewebsites.net/tools/setup-diff
         """
 
 
