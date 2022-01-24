@@ -1,5 +1,6 @@
 import json, re
 from os import path
+from attr import attributes
 from deepdiff import DeepDiff
 
 
@@ -14,10 +15,17 @@ class Setup:
         self.file_name = path.basename(file_path)
 
         # Load the JSON data 
-        self.attributes = json_from_file(file_path)
+        self.attributes = {}
+        self.load_data(file_path)
         self.attributes['temperatures'] = self.parse_title()
 
+        print()
+        print(self.attributes['carName'], self.file_name)
 
+
+        self.convert_values()
+
+        
 
         
     def parse_title(self) -> dict:
@@ -44,79 +52,149 @@ class Setup:
 
         return output
 
-    def compare(self, other_setup) -> dict:
 
+    def load_data(self, file_path: str) -> dict:
+        
+
+        data = json_from_file(file_path)
+
+        self.attributes['carName'] = data['carName']
+
+        basic = data['basicSetup']
+
+        tires = basic['tyres']
+        self.attributes['tyreCompound'] = tires['tyreCompound']
+        self.attributes['tyrePressure'] = parse_corner_values(tires['tyrePressure'])
+
+        alignment = basic['alignment']
+        self.attributes['camber'] = parse_corner_values(alignment['camber'])
+        self.attributes['toe'] = parse_corner_values(alignment['toe'])
+        self.attributes['staticCamber'] = parse_corner_values(alignment['staticCamber'])
+        self.attributes['toeOutLinear'] = parse_corner_values(alignment['toeOutLinear'])
+        self.attributes['caster'] = {
+            'left front': alignment['casterLF'],
+            'right front': alignment['casterRF']
+        }
+        self.attributes['steerRatio'] = alignment['steerRatio']
+
+        electronics = basic['electronics']
+        self.attributes['tc1'] = electronics['tC1']
+        self.attributes['tc2'] = electronics['tC2']
+        self.attributes['abs'] = electronics['abs']
+        self.attributes['ecuMap'] = 1 + electronics['eCUMap']
+
+        advanced = data['advancedSetup']
+
+        mechanical = advanced['mechanicalBalance']
+        self.attributes['arbFront'] = mechanical['aRBFront']
+        self.attributes['arbRear'] = mechanical['aRBRear']
+        self.attributes['wheelRate'] = parse_corner_values(mechanical['wheelRate'])
+        self.attributes['bumpStopRateUp'] = parse_corner_values(mechanical['bumpStopRateUp'])
+        self.attributes['bumpStoppRateDn'] = parse_corner_values(mechanical['bumpStopRateDn'])
+        self.attributes['bumpStopWindow'] = parse_corner_values(mechanical['bumpStopWindow'])
+        self.attributes['brakeTorque'] = mechanical['brakeTorque']
+        self.attributes['brakeBias'] = mechanical['brakeBias']
+
+        dampers = advanced['dampers']
+        self.attributes['bumpSlow'] = parse_corner_values(dampers['bumpSlow'])
+        self.attributes['bumpFast'] = parse_corner_values(dampers['bumpFast'])
+        self.attributes['reboundSlow'] = parse_corner_values(dampers['reboundSlow'])
+        self.attributes['reboundFast'] = parse_corner_values(dampers['reboundFast'])
+
+        aero = advanced['aeroBalance']
+        self.attributes['rideHeight'] = {
+            'front': aero['rideHeight'][0],
+            'rear': aero['rideHeight'][2]
+        }
+        self.attributes['splitter'] = aero['splitter']
+        self.attributes['rearWing'] = aero['rearWing']
+        self.attributes['brakeDuct'] = {
+            'front': aero['brakeDuct'][0],
+            'rear': aero['brakeDuct'][1]
+        }
+
+        drivetrain = advanced['drivetrain']
+        self.attributes['preload'] = drivetrain['preload']
+
+    def convert_values(self):
         """
-        Find and return what is different between two car setups
+        convert the raw setup values to more readable values
         """
 
-        differences = DeepDiff(self.attributes, other_setup.attributes)['values_changed']
-
-        output = {}
-
-        for difference in differences:
-
-            setup_items = []
-            for item in re.findall("\[([A-Za-z0-9_']+)\]", difference):
-
-                # My RegEx is lacking.  Need to remove the single quote
-                item = item.replace("'", "")
-
-                # also if the last item is numeric that means it is an index to a list.
-                # ignore the list index, return the parent
-                if item.isnumeric() == False:
-                    setup_items.append(item)
 
 
-            print(difference)
-            nested_set(
-                output, 
-                setup_items, 
-                {
-                    self.file_name: nested_get(self.attributes, setup_items),
-                    other_setup.file_name: nested_get(other_setup.attributes, setup_items),
-                }
-            ) 
+        for key in self.attributes['tyrePressure']:
+            new_val = tire_pressure_conversion(self.attributes['tyrePressure'][key])
+            self.attributes['tyrePressure'][key] = new_val
 
 
-        # Parse some of the output
-        if 'basicSetup' in output:
-            if 'tyres' in output['basicSetup']:
-                if 'tyrePressure' in output['basicSetup']['tyres']:
-                    for file_name in output['basicSetup']['tyres']['tyrePressure']:
-                        output['basicSetup']['tyres']['tyrePressure'][file_name] = parse_tire_values(output['basicSetup']['tyres']['tyrePressure'][file_name])
-
-            if 'alignment' in output['basicSetup']:
-                if 'staticCamber' in output['basicSetup']['alignment']:
-                    for file_name in output['basicSetup']['alignment']['staticCamber']:
-                        output['basicSetup']['alignment']['staticCamber'][file_name] = parse_tire_values(output['basicSetup']['alignment']['staticCamber'][file_name])
-                if 'toeOutLinear' in output['basicSetup']['alignment']:
-                    for file_name in output['basicSetup']['alignment']['toeOutLinear']:
-                        output['basicSetup']['alignment']['toeOutLinear'][file_name] = parse_tire_values(output['basicSetup']['alignment']['toeOutLinear'][file_name])
+        self.attributes['toe'] = toe_conversion(self.attributes['toe'], self.attributes['carName'])
 
 
-        if 'advancedSetup' in output:
-            if 'aeroBalance' in output['advancedSetup']:
-                if 'rodLength' in output['advancedSetup']['aeroBalance']:
-                    for file_name in output['advancedSetup']['aeroBalance']['rodLength']:
-                        output['advancedSetup']['aeroBalance']['rodLength'][file_name] = parse_tire_values(output['advancedSetup']['aeroBalance']['rodLength'][file_name])
-        return output
 
 
-def parse_tire_values(tires: list) -> dict:
+def parse_corner_values(vals: list) -> dict:
     """
-    Take the array of tire values and return a more descriptive dict
-    Use for tire pressure, camber, toe, caster...
+    Take the array of tire/corner values and return a more descriptive dict
+    Use for tire pressure, camber, toe,...
     """
 
     # Need to verify which index goes to which tire.
-    # this is a guess
     return {
-        'front_left': tires[0],
-        'front_right': tires[1],
-        'rear_right': tires[2],
-        'rear_left': tires[3]
+        'front_left': vals[0],
+        'front_right': vals[1],
+        'rear_left': vals[2],
+        'rear_right': vals[3]
     }
+
+
+def tire_pressure_conversion(raw: int) -> float:
+    # raw 53 = display 25.6
+    # raw 57 = display 26.0
+
+    away_from_57 = raw - 57
+    return float(
+        26.0 + (away_from_57 / 10)
+    )
+
+
+def toe_conversion(raw: dict, car_name: str) -> float:
+    
+    if car_name == 'mclaren_720s_gt3':
+
+        for front in ['front_left', 'front_right']:
+            raw[front] = -0.48 + (0.01 * raw[front])
+        for rear in ['rear_left', 'rear_right']:
+            raw[rear] = -0.1 + (0.01 * raw[rear])
+
+    elif car_name in ['nissan_gt_r_gt3_2018', 'bmw_m6_gt3', 'nissan_gt_r_gt3_2017', 'bmw_m4_gt3', 'bmw_m4_gt4', 'chevrolet_camaro_gt4r', 'mercedes_amg_gt4']:
+        
+        for front in ['front_left', 'front_right']:
+            raw[front] = -0.2 + (0.01 * raw[front])
+        for rear in ['rear_left', 'rear_right']:
+            raw[rear] = 0.01 * raw[rear]
+        
+    else:
+
+        for corner in ['front_left', 'front_right', 'rear_left', 'rear_right']:
+            raw[corner] = 0.01 * raw[corner] - 0.4
+
+
+
+
+    for corner in ['front_left', 'front_right', 'rear_left', 'rear_right']:
+        raw[corner] = round(raw[corner], 2)
+
+    return raw
+    
+
+def caster_conversion(raw: int) -> float:
+    # raw 23 = display 13.8
+    # raw 3 = display 11.2
+    # raw 46 = display 12.3
+
+
+    pass
 
 
 def json_from_file(file_name):
@@ -128,21 +206,3 @@ def json_to_file(file_name, json_data):
     with open(file_name, 'w') as out_file:
         json.dump(json_data, out_file)
 
-def nested_get(data, keys):
-
-    # if the last key is numeric, it is an index to an array
-    # remove it and return the whole array
-
-    last_key = keys[-1]
-    if last_key.isnumeric():
-        keys = keys[:-1]
-
-    print(keys)
-    for key in keys:
-        data = data[key]
-    return data
-
-def nested_set(data, keys, val):
-    for key in keys[:-1]:
-        data = data.setdefault(key, {})
-    data[keys[-1]] = val
